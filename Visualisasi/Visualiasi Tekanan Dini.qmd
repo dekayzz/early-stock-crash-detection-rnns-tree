@@ -1,0 +1,540 @@
+---
+title: "EDA"
+format: html
+---
+
+## LSTM	Indonesia	1%
+
+```{r}
+library(readxl)
+df <- read_excel("../Data/df.indonesia.1persen.xlsx")
+df$...1 <- as.Date(df$...1)
+df$Date <- df$...1
+dfvizz <- df[, c("Date", "idn_close", "idn_crash")]
+dfvizz
+```
+
+
+```{r}
+data1 <- read_excel("../Output/id1_smote_prob.xlsx")
+data1$...1 <- as.Date(data1$...1)
+data1$Date <- data1$...1
+data1$Date <- as.Date(data1$Date, format="%m/%d/%Y")
+data1$pred <- ifelse(data1$ProbLSTM > 0.5, 1, 0)
+data1$prob <- data1$ProbLSTM
+data1
+```
+
+```{r}
+# Melakukan merge
+result <- merge(dfvizz, data1, by = "Date")
+result
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+# Buat kolom baru untuk hit rate, miss, dan false alarm
+result$hit_rate <- (result$pred == 1 & result$idn_crash == 1)
+result$miss <- (result$pred == 0 & result$idn_crash == 1)
+result$false_alarm <- (result$pred == 1 & result$idn_crash == 0)
+```
+
+```{r, fid.width=6, fig.height=6}
+library(ggplot2)
+library(gridExtra)
+
+# Create a factor column for the legend in plot1
+result$category1 <- factor(
+  ifelse(result$idn_crash == 1, "Tekanan", NA),
+  levels = c("Tekanan")
+)
+
+# Create plot1 with the legend
+plot1 <- ggplot(result, aes(x = Date, y = idn_close)) +
+  geom_line() +
+  labs(title = "Pergerakan Harga dan Tekanan Pasar Aktual",
+       x = "",
+       y = "Harga") +
+  # Tambahkan titik tekanan
+  geom_point(data = result[!is.na(result$category1), ],
+             aes(x = Date, y = idn_close, color = category1, shape = category1),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = "green")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = 16)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Create a factor column for the legend in plot2
+result$category <- factor(
+  ifelse(result$hit_rate == 1, "Hit",
+         ifelse(result$miss == 1, "Missed",
+                ifelse(result$false_alarm == 1, "False Alarm", NA))),
+  levels = c("Hit", "Missed", "False Alarm")
+)
+
+# Create plot2 with the legend
+plot2 <- ggplot(result, aes(x = Date, y = prob)) +
+  geom_line() +
+  labs(title = "Prediksi Probability Tekanan Pasar",
+       x = "",
+       y = "Probability") +
+  # Tambahkan titik hit rate, miss, dan false alarm
+  geom_point(data = result[!is.na(result$category), ],
+             aes(x = Date, y = prob, color = category, shape = category),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Hit" = "green", "Missed" = "red", "False Alarm" = "orange")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Hit" = 16, "Missed" = 15, "False Alarm" = 21)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Gabungkan plot
+grid.arrange(plot1, plot2, nrow = 2)
+combined_plot <- grid.arrange(plot1, plot2, nrow = 2) # Save plot
+ggsave("lstmid1.jpg", plot = combined_plot, dpi = 300, width = 10, height = 7)
+```
+
+
+## GRU	Thailand	1%
+
+```{r}
+library(readxl)
+df <- read_excel("../Data/df.thailand.1persen.xlsx")
+df$...1 <- as.Date(df$...1)
+df$Date <- df$...1
+dfvizz <- df[, c("Date", "idn_close", "idn_crash")]
+dfvizz
+```
+
+
+```{r}
+data1 <- read_excel("../Output/tl1_smote_prob.xlsx")
+data1$...1 <- as.Date(data1$...1)
+data1$Date <- data1$...1
+data1$Date <- as.Date(data1$Date, format="%m/%d/%Y")
+data1$pred <- ifelse(data1$ProbGRU > 0.5, 1, 0)
+data1$prob <- data1$ProbGRU
+data1
+```
+
+```{r}
+# Melakukan merge
+result <- merge(dfvizz, data1, by = "Date")
+result
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+# Buat kolom baru untuk hit rate, miss, dan false alarm
+result$hit_rate <- (result$pred == 1 & result$idn_crash == 1)
+result$miss <- (result$pred == 0 & result$idn_crash == 1)
+result$false_alarm <- (result$pred == 1 & result$idn_crash == 0)
+```
+
+```{r, fid.width=6, fig.height=6}
+library(ggplot2)
+library(gridExtra)
+
+# Create a factor column for the legend in plot1
+result$category1 <- factor(
+  ifelse(result$idn_crash == 1, "Tekanan", NA),
+  levels = c("Tekanan")
+)
+
+# Create plot1 with the legend
+plot1 <- ggplot(result, aes(x = Date, y = idn_close)) +
+  geom_line() +
+  labs(title = "Pergerakan Harga dan Tekanan Pasar Aktual",
+       x = "",
+       y = "Harga") +
+  # Tambahkan titik tekanan
+  geom_point(data = result[!is.na(result$category1), ],
+             aes(x = Date, y = idn_close, color = category1, shape = category1),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = "green")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = 16)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Create a factor column for the legend in plot2
+result$category <- factor(
+  ifelse(result$hit_rate == 1, "Hit",
+         ifelse(result$miss == 1, "Missed",
+                ifelse(result$false_alarm == 1, "False Alarm", NA))),
+  levels = c("Hit", "Missed", "False Alarm")
+)
+
+# Create plot2 with the legend
+plot2 <- ggplot(result, aes(x = Date, y = prob)) +
+  geom_line() +
+  labs(title = "Prediksi Probability Tekanan Pasar",
+       x = "",
+       y = "Probability") +
+  # Tambahkan titik hit rate, miss, dan false alarm
+  geom_point(data = result[!is.na(result$category), ],
+             aes(x = Date, y = prob, color = category, shape = category),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Hit" = "green", "Missed" = "red", "False Alarm" = "orange")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Hit" = 16, "Missed" = 15, "False Alarm" = 21)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Gabungkan plot
+grid.arrange(plot1, plot2, nrow = 2)
+combined_plot <- grid.arrange(plot1, plot2, nrow = 2) # Save plot
+ggsave("grutl1.jpg", plot = combined_plot, dpi = 300, width = 10, height = 7)
+```
+
+## LSTM	Indonesia	2.5%
+
+```{r}
+library(readxl)
+df <- read_excel("../Data/df.indonesia.2.5persen.xlsx")
+df$...1 <- as.Date(df$...1)
+df$Date <- df$...1
+dfvizz <- df[, c("Date", "idn_close", "idn_crash")]
+dfvizz
+```
+
+
+```{r}
+data1 <- read_excel("../Output/tl1_smote_prob.xlsx")
+data1$...1 <- as.Date(data1$...1)
+data1$Date <- data1$...1
+data1$Date <- as.Date(data1$Date, format="%m/%d/%Y")
+data1$pred <- ifelse(data1$ProbLSTM > 0.5, 1, 0)
+data1$prob <- data1$ProbLSTM
+data1
+```
+
+```{r}
+# Melakukan merge
+result <- merge(dfvizz, data1, by = "Date")
+result
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+# Buat kolom baru untuk hit rate, miss, dan false alarm
+result$hit_rate <- (result$pred == 1 & result$idn_crash == 1)
+result$miss <- (result$pred == 0 & result$idn_crash == 1)
+result$false_alarm <- (result$pred == 1 & result$idn_crash == 0)
+```
+
+```{r, fid.width=6, fig.height=6}
+library(ggplot2)
+library(gridExtra)
+
+# Create a factor column for the legend in plot1
+result$category1 <- factor(
+  ifelse(result$idn_crash == 1, "Tekanan", NA),
+  levels = c("Tekanan")
+)
+
+# Create plot1 with the legend
+plot1 <- ggplot(result, aes(x = Date, y = idn_close)) +
+  geom_line() +
+  labs(title = "Pergerakan Harga dan Tekanan Pasar Aktual",
+       x = "",
+       y = "Harga") +
+  # Tambahkan titik tekanan
+  geom_point(data = result[!is.na(result$category1), ],
+             aes(x = Date, y = idn_close, color = category1, shape = category1),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = "green")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = 16)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Create a factor column for the legend in plot2
+result$category <- factor(
+  ifelse(result$hit_rate == 1, "Hit",
+         ifelse(result$miss == 1, "Missed",
+                ifelse(result$false_alarm == 1, "False Alarm", NA))),
+  levels = c("Hit", "Missed", "False Alarm")
+)
+
+# Create plot2 with the legend
+plot2 <- ggplot(result, aes(x = Date, y = prob)) +
+  geom_line() +
+  labs(title = "Prediksi Probability Tekanan Pasar",
+       x = "",
+       y = "Probability") +
+  # Tambahkan titik hit rate, miss, dan false alarm
+  geom_point(data = result[!is.na(result$category), ],
+             aes(x = Date, y = prob, color = category, shape = category),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Hit" = "green", "Missed" = "red", "False Alarm" = "orange")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Hit" = 16, "Missed" = 15, "False Alarm" = 21)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Gabungkan plot
+grid.arrange(plot1, plot2, nrow = 2)
+combined_plot <- grid.arrange(plot1, plot2, nrow = 2) # Save plot
+ggsave("lstmid2.jpg", plot = combined_plot, dpi = 300, width = 10, height = 7)
+```
+
+## GRU	Indonesia	2.5%
+
+```{r}
+library(readxl)
+df <- read_excel("../Data/df.indonesia.2.5persen.xlsx")
+df$...1 <- as.Date(df$...1)
+df$Date <- df$...1
+dfvizz <- df[, c("Date", "idn_close", "idn_crash")]
+dfvizz
+```
+
+
+```{r}
+data1 <- read_excel("../Output/tl1_smote_prob.xlsx")
+data1$...1 <- as.Date(data1$...1)
+data1$Date <- data1$...1
+data1$Date <- as.Date(data1$Date, format="%m/%d/%Y")
+data1$pred <- ifelse(data1$ProbGRU > 0.5, 1, 0)
+data1$prob <- data1$ProbGRU
+data1
+```
+
+```{r}
+# Melakukan merge
+result <- merge(dfvizz, data1, by = "Date")
+result
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+# Buat kolom baru untuk hit rate, miss, dan false alarm
+result$hit_rate <- (result$pred == 1 & result$idn_crash == 1)
+result$miss <- (result$pred == 0 & result$idn_crash == 1)
+result$false_alarm <- (result$pred == 1 & result$idn_crash == 0)
+```
+
+```{r, fid.width=6, fig.height=6}
+library(ggplot2)
+library(gridExtra)
+
+# Create a factor column for the legend in plot1
+result$category1 <- factor(
+  ifelse(result$idn_crash == 1, "Tekanan", NA),
+  levels = c("Tekanan")
+)
+
+# Create plot1 with the legend
+plot1 <- ggplot(result, aes(x = Date, y = idn_close)) +
+  geom_line() +
+  labs(title = "Pergerakan Harga dan Tekanan Pasar Aktual",
+       x = "",
+       y = "Harga") +
+  # Tambahkan titik tekanan
+  geom_point(data = result[!is.na(result$category1), ],
+             aes(x = Date, y = idn_close, color = category1, shape = category1),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = "green")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = 16)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Create a factor column for the legend in plot2
+result$category <- factor(
+  ifelse(result$hit_rate == 1, "Hit",
+         ifelse(result$miss == 1, "Missed",
+                ifelse(result$false_alarm == 1, "False Alarm", NA))),
+  levels = c("Hit", "Missed", "False Alarm")
+)
+
+# Create plot2 with the legend
+plot2 <- ggplot(result, aes(x = Date, y = prob)) +
+  geom_line() +
+  labs(title = "Prediksi Probability Tekanan Pasar",
+       x = "",
+       y = "Probability") +
+  # Tambahkan titik hit rate, miss, dan false alarm
+  geom_point(data = result[!is.na(result$category), ],
+             aes(x = Date, y = prob, color = category, shape = category),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Hit" = "green", "Missed" = "red", "False Alarm" = "orange")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Hit" = 16, "Missed" = 15, "False Alarm" = 21)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Gabungkan plot
+grid.arrange(plot1, plot2, nrow = 2)
+combined_plot <- grid.arrange(plot1, plot2, nrow = 2) # Save plot
+ggsave("gruid2.jpg", plot = combined_plot, dpi = 300, width = 10, height = 7)
+```
+
+## LSTM	Singapura	5%
+
+```{r}
+library(readxl)
+df <- read_excel("../Data/df.singapura.5persen.xlsx")
+df$...1 <- as.Date(df$...1)
+df$Date <- df$...1
+dfvizz <- df[, c("Date", "idn_close", "idn_crash")]
+dfvizz
+```
+
+
+```{r}
+data1 <- read_excel("../Output/tl1_smote_prob.xlsx")
+data1$...1 <- as.Date(data1$...1)
+data1$Date <- data1$...1
+data1$Date <- as.Date(data1$Date, format="%m/%d/%Y")
+data1$pred <- ifelse(data1$ProbLSTM > 0.5, 1, 0)
+data1$prob <- data1$ProbLSTM
+data1
+```
+
+```{r}
+# Melakukan merge
+result <- merge(dfvizz, data1, by = "Date")
+result
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+# Buat kolom baru untuk hit rate, miss, dan false alarm
+result$hit_rate <- (result$pred == 1 & result$idn_crash == 1)
+result$miss <- (result$pred == 0 & result$idn_crash == 1)
+result$false_alarm <- (result$pred == 1 & result$idn_crash == 0)
+```
+
+```{r, fid.width=6, fig.height=6}
+library(ggplot2)
+library(gridExtra)
+
+# Create a factor column for the legend in plot1
+result$category1 <- factor(
+  ifelse(result$idn_crash == 1, "Tekanan", NA),
+  levels = c("Tekanan")
+)
+
+# Create plot1 with the legend
+plot1 <- ggplot(result, aes(x = Date, y = idn_close)) +
+  geom_line() +
+  labs(title = "Pergerakan Harga dan Tekanan Pasar Aktual",
+       x = "",
+       y = "Harga") +
+  # Tambahkan titik tekanan
+  geom_point(data = result[!is.na(result$category1), ],
+             aes(x = Date, y = idn_close, color = category1, shape = category1),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = "green")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Tekanan" = 16)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Create a factor column for the legend in plot2
+result$category <- factor(
+  ifelse(result$hit_rate == 1, "Hit",
+         ifelse(result$miss == 1, "Missed",
+                ifelse(result$false_alarm == 1, "False Alarm", NA))),
+  levels = c("Hit", "Missed", "False Alarm")
+)
+
+# Create plot2 with the legend
+plot2 <- ggplot(result, aes(x = Date, y = prob)) +
+  geom_line() +
+  labs(title = "Prediksi Probability Tekanan Pasar",
+       x = "",
+       y = "Probability") +
+  # Tambahkan titik hit rate, miss, dan false alarm
+  geom_point(data = result[!is.na(result$category), ],
+             aes(x = Date, y = prob, color = category, shape = category),
+             size = 4,
+             alpha = 0.8) +
+  scale_color_manual(
+    name = "Keterangan",
+    values = c("Hit" = "green", "Missed" = "red", "False Alarm" = "orange")
+  ) +
+  scale_shape_manual(
+    name = "Keterangan",
+    values = c("Hit" = 16, "Missed" = 15, "False Alarm" = 21)
+  ) +
+  theme(legend.position = "top") +
+  theme_classic()
+
+# Gabungkan plot
+grid.arrange(plot1, plot2, nrow = 2)
+combined_plot <- grid.arrange(plot1, plot2, nrow = 2) # Save plot
+ggsave("lstmsg3.jpg", plot = combined_plot, dpi = 300, width = 10, height = 7)
+```
